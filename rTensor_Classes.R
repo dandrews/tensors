@@ -4,7 +4,6 @@
 ### Master Class (Made virtual so that dense tensor & sparse tensor implementations could easily inherit basic tensor properties)
 setClass("Tensor",
 representation(num_modes = "integer", modes = "integer", modenames = "list", "VIRTUAL"),
-#prototype = prototype(num_modes = 1L, modes = c(1L), modenames= list(NULL)),
 validity = function(object){
 	num_modes <- object@num_modes
 	modes <- object@modes
@@ -15,12 +14,11 @@ validity = function(object){
 	msg <- "'modes' must contain positive values; if any mode is 0, consider a smaller num_modes"
 	errors <- c(errors, msg)
 	}
-	if (is.null(modenames)){modenames <- list(NULL)
-		}else if (!is.list(modenames)){
-		msg <- "if non-empty, 'modenames' must be a list"
+	if (!is.list(modenames)){
+		msg <- "'modenames' must be a list"
 	}
-	if (is.list(modenames) && !is.null(modenames[[1]]) && (length(modenames)!=num_modes)){
-	msg <- "warning: 'modenames' length does not match number of modes; recycling."
+	if (!is.null(modenames[[1]]) && (length(modenames)!=num_modes)){
+	msg <- "warning: 'modenames' length does not match number of modes. recycling"
 	cat(msg)
 	}
 	if(length(errors)==0) TRUE else errors
@@ -42,11 +40,11 @@ validity = function(object){
 #####Initializations 
 setMethod(f="initialize",
 signature="ndTensor",
-definition = function(.Object, num_modes=NULL, modes=NULL, modenames=NULL, data=NULL){
-cat("~~~Initializing a new ndTensor~~~~ \n")
+definition = function(.Object, num_modes=NULL, modes=NULL, modenames=list(NULL), data=NULL){
 	if(is.null(data)){
 		.Object@num_modes <- integer(0)
 		.Object@modes <- integer(0)
+		.Object@modenames <- list(NULL)
 		validObject(.Object)
 		.Object
 	}
@@ -58,75 +56,45 @@ cat("~~~Initializing a new ndTensor~~~~ \n")
 		if (is.vector(data)) modes <- length(data)
 		else{modes <- dim(data) }
 	}
-	if(!is.null(modenames)){
+	if(is.null(modenames[[1]])&&!is.null(dimnames(.Object))){
 		modenames <- dimnames(data)
-	}else{ modenames <- list(NULL)}
-	
+		}
 	.Object@num_modes <- num_modes
 	.Object@modes <- modes
 	.Object@modenames <- modenames
-	.Object@data <- array(data)
+	.Object@data <- as.array(data,dim=modes,dimnames=modenames)
 	validObject(.Object)
 	.Object
 })
 
-###Helper Function to Create ndTensor
-as.tensor <- function(x, num_modes, modes, modenames=NULL, type = "numeric"){
-if(!(type %in% c("numeric", "integer", "logical"))) stop("type must be 'numeric', 'integer', or 'logical'")
-if (is.vector(x)){
-	modes <- c(length(x))
-	num_modes <- 1L
-	modenames <- names(x)
-}else if (is.matrix(x)){
-	modes <- dim(x)
-	num_modes <- 2L
-	modenames <- dimnames(x)
-}else if (is.array(x)){
-	modes <- dim(x)
-	num_modes <- length(modes)
-	modenames <- dimnames(x)
-}else{
-stop("can only create a tensor from vectors, matrices, and arrays")	
-}	
 
-tnsr<-switch(type,
-numeric=new("ndTensor",num_modes,modes,modenames,data=x),
-integer=new("ndTensor",num_modes,modes,modenames,data=x),
-logical=new("ndTensor",num_modes,modes,modenames,data=x)
-)
-return(tnsr)
+#####Create a Random Tensor
+rand_tensor <- function(modes=c(3,4,5)){
+	new("ndTensor",data=array(runif(prod(modes)), dim=modes),modenames=as.list(letters[1:length(modes)]))
 }
 
-#arr <- array(runif(1e3),dim=c(10,10,10))
-#mat <- matrix(runif(100),nrow=10)
-#vec <- 1:10
-#arrT <- as.tensor(arr)
-#matT <- as.tensor(mat)
-#vecT <- as.tensor(vec)
 
 
-###Plot Functions
+
+
 
 
 
 ##################################<to-do-list>######################################
 #### in R:
-#implement add/subtract
-#implement tensor times vector
-#implement tensor times matrix
-#implement matricization
-#implement un-matricization
-#implement alternating least squares
+
+###Important:
+#implement tensor normal!!!
+#tucker decomp
+#canonical decomp
+#mpca
+#mica
 
 
-
-#### in C++:
-#implement ndTensor_validate
-
-
-
-
-
+#### look into refClass
+#implement fiber setting (refClass)
+#implement slice setting (refClass)
+#implement general subTensor setting (refClass)
 
 
 
@@ -137,7 +105,8 @@ return(tnsr)
 
 
 
-##########################<to be implemented MUCH later>#############################
+
+#########################<to be implemented MUCH later>#############################
 ### Integer Dense Tensor
 #setClass("idTensor", representation(data = "integer"), contains = c("Tensor", "array"), validity = function(object) idTensor_validate(object))
 ### Logical Dense Tensor
