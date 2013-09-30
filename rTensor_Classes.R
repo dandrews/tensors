@@ -1,5 +1,4 @@
 #####(rTensor) Tensor Algebra and Statistical Models####
-
 #####Class Defintions
 ### Master Class (Made virtual so that dense tensor & sparse tensor implementations could easily inherit basic tensor properties)
 setClass("Tensor",
@@ -23,7 +22,6 @@ validity = function(object){
 	}
 	if(length(errors)==0) TRUE else errors
 })
-
 ###Dense Tensor Classes (Non-virtual)
 ### Numeric Dense Tensor
 setClass("ndTensor", representation(data = "array"), contains = "Tensor", 
@@ -35,8 +33,6 @@ validity = function(object){
 	errors <- c(errors, ndtv)
 	}	
 })
-
-
 #####Initializations 
 setMethod(f="initialize",
 signature="ndTensor",
@@ -68,10 +64,14 @@ definition = function(.Object, num_modes=NULL, modes=NULL, modenames=list(NULL),
 })
 
 
-#####Create a Random Tensor
-rand_tensor <- function(modes=c(3,4,5)){
-	new("ndTensor",data=array(runif(prod(modes)), dim=modes),modenames=as.list(letters[1:length(modes)]))
-}
+
+
+
+
+
+
+
+
 
 
 
@@ -81,31 +81,7 @@ rand_tensor <- function(modes=c(3,4,5)){
 
 
 ##################################<to-do-list>######################################
-#### in R:
-
-###Important:
 #implement tensor normal!!!
-#tucker decomp
-#canonical decomp
-#mpca
-#mica
-
-
-#### look into refClass
-#implement fiber setting (refClass)
-#implement slice setting (refClass)
-#implement general subTensor setting (refClass)
-
-
-
-
-
-
-
-
-
-
-
 #########################<to be implemented MUCH later>#############################
 ### Integer Dense Tensor
 #setClass("idTensor", representation(data = "integer"), contains = c("Tensor", "array"), validity = function(object) idTensor_validate(object))
@@ -113,14 +89,11 @@ rand_tensor <- function(modes=c(3,4,5)){
 #setClass("ldTensor", representation(data = "logical"), contains = c("Tensor", "array"), validity = function(object) ldTensor_validate(object))
 ### Sparse tensor
 
-
 ### Initialization Functions
 #setMethod("initialize", "ndTensor", function(.Object){
 #	modes <- 
 #	.Object@data <- .Internal(array(data,modes,modenames)))
 #	}
-
-
 
 ### Rcpp & marry.hxx 
 #require(Rcpp)
@@ -134,4 +107,3 @@ rand_tensor <- function(modes=c(3,4,5)){
 #size = prod(dims)
 #a <- array(runif(size), dim = dims)
 ####################################################################################
-
