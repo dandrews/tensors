@@ -15,7 +15,7 @@ superdiagonal_tensor <- function(num_modes,len,elements=1L){
 	}
 	as.tensor(arr)
 }
-###Create an 3d Identity Tensor
+###Create an 3d Identity Tensor (3D only)
 identity_tensor3d <- function(modes){
 	if(length(modes)!=3L) stop("identity tensor only implemented for 3d so far")
 	n <- modes[1]

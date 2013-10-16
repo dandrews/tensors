@@ -1,37 +1,5 @@
 #####(rTensor) Tensor Algebra and Statistical Models####
 #####Functions that operate on Matrices and Arrays
-###Creation of ndTensor from an array
-tensor <- function(x, modes, modenames=list(NULL), type = "numeric",drop=TRUE){
-	as.tensor(x=x, modes=modes, modenames=modenames, type = type,drop=drop)
-}
-#
-as.tensor <- function(x, modes, modenames=list(NULL), type = "numeric",drop=TRUE){
-	if(!(type %in% c("numeric", "integer", "logical"))) stop("type must be 'numeric', 'integer', or 'logical'")
-	if (is.vector(x)){
-		modes <- c(length(x))
-		num_modes <- 1L
-	}else if (is.array(x)){
-		modes <- dim(x)
-		num_modes <- length(modes)
-		if(is.null(modenames[[1]])&&!is.null(dimnames(x))){
-			modenames <- dimnames(data)
-			}
-		dim1s <- which(modes==1)
-		if(drop && (length(dim1s)>0)){
-			modes <- modes[-dim1s]
-			if(!is.null(modenames[[1]])) modenames <- modenames[-dim1s]
-			num_modes <- num_modes-length(dim1s)
-		}
-	}else{
-	stop("can only create a tensor from vectors, matrices, and arrays")	
-	}
-	tnsr<-switch(type,
-	numeric=new("ndTensor",num_modes,modes,modenames,data=x),
-	integer=new("ndTensor",num_modes,modes,modenames,data=x),
-	logical=new("ndTensor",num_modes,modes,modenames,data=x)
-	)
-	return(tnsr)
-}
 ###Hamadard (element-wise) product of a list of matrices
 hamadard_list <- function(L){
 	isvecORmat <- function(x){is.matrix(x) || is.vector(x)}
@@ -80,9 +48,9 @@ khatri_rao_list <- function(L,reverse=FALSE){
 norm_vec <- function(vec){
 	norm(as.matrix(vec))
 }
-###Circulant Matrix from a vector (clever)
+###Circulant Matrix from a vector
 circ_mat <- function(vec){
 	stopifnot(is.vector(vec))
 	n <- length(vec)
-	suppressWarnings(matrix(x[t(matrix(1:n,n+1,n+1,byrow=T)[c(1,n:2),1:n])],n,n))
+	suppressWarnings(matrix(vec[t(matrix(1:n,n+1,n+1,byrow=T)[c(1,n:2),1:n])],n,n))
 }

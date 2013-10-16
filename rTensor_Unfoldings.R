@@ -2,40 +2,39 @@
 #####Tensor Unfoldings
 ###General Unfolding
 setMethod("unfold", signature="Tensor",
-definition=function(x,rs=NULL,cs=NULL,asTensor=FALSE){
+definition=function(x,rs=NULL,cs=NULL){
 	#checks
 	if(is.null(rs)||is.null(cs)) stop("row space and col space indices must be specified")
-	num_modes <- getNumModes(x)
+	num_modes <- x@num_modes
 	if (length(rs) + length(cs) != num_modes) stop("incorrect number of indices")
 	if(any(rs<1) || any(rs>num_modes) || any(cs < 1) || any(cs>num_modes)) stop("illegal indices specified")
 	perm <- c(rs,cs)
 	if (any(sort(perm,decreasing=TRUE) != num_modes:1)) stop("missing and/or repeated indices")
-	modes <- getModes(x)
-	mat <- getData(x)
+	modes <- x@modes
+	mat <- x@data
 	new_modes <- c(prod(modes[rs]),prod(modes[cs]))
 	#rearranges into a matrix
 	mat <- aperm(mat,perm)
 	dim(mat) <- new_modes
-	if(asTensor) mat <- as.tensor(mat)
-	mat
+	as.tensor(mat)
 })
 ###Row Space Unfolding in the m mode - aka Matricization (Kolda et. al)
 setMethod("rs_unfold", signature="Tensor",
-definition=function(x,m=NULL,asTensor=FALSE){
+definition=function(x,m=NULL){
 	if(is.null(m)) stop("mode m must be specified")
-	num_modes <- getNumModes(x)
+	num_modes <- x@num_modes
 	rs <- m
 	cs <- (1:num_modes)[-m]
-	unfold(x,rs=rs,cs=cs,asTensor=asTensor)
+	unfold(x,rs=rs,cs=cs)
 })
 ###Column Space Unfolding in the m mode (Martin et. al)
 setMethod("cs_unfold", signature="Tensor",
-definition=function(x,m=NULL,asTensor=FALSE){
+definition=function(x,m=NULL){
 	if(is.null(m)) stop("mode m must be specified")
-	num_modes <- getNumModes(x)
+	num_modes <- x@num_modes
 	rs <- (1:num_modes)[-m]
 	cs <- m
-	unfold(x,rs=rs,cs=cs,asTensor=asTensor)
+	unfold(x,rs=rs,cs=cs)
 })
 #####Matrix Foldings
 ###General folding (inverse function to unfold)
@@ -46,17 +45,16 @@ fold <- function(mat, rs = NULL, cs = NULL, modes=NULL){
 	if(!is(mat,"Tensor")){
 		if(!is.matrix(mat))  stop("mat must be of class 'matrix'")
 		}else{
-			stopifnot(getNumModes(mat)==2)
-			mat <- getData(mat)			
+			stopifnot(mat@num_modes==2)
+			mat <- mat@data			
 			}
 	num_modes <- length(modes)
-	stopifnot(num_modes==length(rs)+length(rs))
+	stopifnot(num_modes==length(rs)+length(cs))
 	mat_modes <- dim(mat)
 	if((mat_modes[1]!=prod(modes[rs])) || (mat_modes[2]!=prod(modes[cs]))) stop("matrix nrow/ncol does not match Tensor modes")
 	#rearranges into array
 	iperm <- match(1:num_modes,c(rs,cs))
-	arr<-array(mat,dim=c(modes[rs],modes[cs]))
-	as.tensor(aperm(arr,iperm))
+	as.tensor(aperm(array(mat,dim=c(modes[rs],modes[cs])),iperm))
 }
 ###Row Space Folding (inverse funtion to rs_unfold) in the m mode
 rs_fold <- function(mat,m=NULL,modes=NULL){
